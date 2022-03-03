@@ -45,12 +45,13 @@ def RPS_calculation(hist_data, submission, asset_no=100):
     #Compute percentage returns
     returns = pd.DataFrame(columns = ["ID", "Return"])
     
-    min_date = min(hist_data.date)
-    max_date = max(hist_data.date)
-    
+   
     for i in range(0,len(asset_id)):
         temp = hist_data.loc[hist_data.symbol==asset_id[i]]
-        
+        temp1 = temp.dropna()
+        min_date = min(temp1.date)
+        max_date = max(temp1.date)
+    
         open_price = float(temp.loc[temp.date==min_date].price)
         close_price = float(temp.loc[temp.date==max_date].price)
         
@@ -62,6 +63,7 @@ def RPS_calculation(hist_data, submission, asset_no=100):
     ranking.ID = list(asset_id)
     ranking.Return = returns.Return
     ranking.Position = ranking.Return.rank(method = 'min')
+    #display(ranking.Position)
 
     #Handle Ties
     Series_per_position = pd.DataFrame(columns=["Position","Series", "Rank", "Rank1", "Rank2","Rank3", "Rank4", "Rank5"])
@@ -69,9 +71,7 @@ def RPS_calculation(hist_data, submission, asset_no=100):
     temp = ranking.Position.value_counts()
     temp = pd.DataFrame(zip(temp.index, temp), columns = ["Rank", "Occurencies"])
     temp = temp.sort_values(by = ["Rank"],ascending=True)
-    Series_per_position.Series = list(temp.Occurencies)
-    Series_per_position
-
+    Series_per_position.Series[: len(list(temp.Occurencies))] = list(temp.Occurencies)
     total_ranks = Series_per_position.Position.values[-1]
     for i in range(0,Series_per_position.shape[0]):
     
@@ -121,6 +121,7 @@ def RPS_calculation(hist_data, submission, asset_no=100):
               'details' : submission}
     
     return(output)
+   
    
 #Function for computing IR
 def IR_calculation(hist_data, submission):
